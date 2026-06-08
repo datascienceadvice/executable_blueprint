@@ -1,7 +1,11 @@
 # ===== ПАРАМЕТРИЗАЦИЯ: РЕЖИМ РАБОТЫ =====
 # "draft"  – черновик (маски, график-заглушка)
 # "final"  – финальный отчёт (реальные данные из data.xlsx)
-$Mode = "draft"
+$Mode = "final"
+
+$DataPath = "data.xlsx"
+$sheetName = "pass"
+$ReportPath = "Report.docx"
 # =======================================
 
 # Очистка предыдущих процессов Excel/Word
@@ -12,8 +16,8 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $ScriptDir
 Write-Host "1. Папка скрипта: $ScriptDir" -ForegroundColor Gray
 
-$ExcelPath = Join-Path $ScriptDir "data.xlsx"
-$OutputDocx = Join-Path $ScriptDir "Report.docx"
+$ExcelPath = Join-Path $ScriptDir $DataPath
+$OutputDocx = Join-Path $ScriptDir $ReportPath
 $PercentWidth = 80   # ширина графика в % от ширины страницы
 
 # --- чтение данных, расчёт статистики (только для final) ---
@@ -21,8 +25,9 @@ if ($Mode -eq "final") {
     Write-Host "РЕЖИМ: ОТЧЁТ (final)" -ForegroundColor Green
     Write-Host "2. Проверка файла Excel..." -ForegroundColor Cyan
     if (-not (Test-Path $ExcelPath)) { Write-Error "Файл $ExcelPath не найден"; exit 1 }
+    
     Import-Module ImportExcel -ErrorAction Stop
-    $data = Import-Excel $ExcelPath
+    $data = Import-Excel -Path $ExcelPath -WorksheetName $sheetName
     if (($data.ID -eq $null) -or ($data.area -eq $null)) { Write-Error "Файл должен содержать колонки 'ID' и 'area'"; exit 1 }
 
     Write-Host "3. Извлечение числовых значений..." -ForegroundColor Cyan
@@ -117,7 +122,7 @@ try {
     if ($Mode -eq "draft") {
         $selection.TypeText("[данные будут получены после эксперимента]")
     } else {
-        $selection.TypeText("data.xlsx")
+        $selection.TypeText("$DataPath, лист: $sheetName")
     }
     $selection.TypeParagraph()
 
@@ -193,14 +198,14 @@ try {
         $table2.Cell(2,1).Range.Text = "Количество измерений"; $table2.Cell(2,2).Range.Text = "[n]"
         $table2.Cell(3,1).Range.Text = "Среднее арифметическое (площадь)"; $table2.Cell(3,2).Range.Text = "[x.xxx]"
         $table2.Cell(4,1).Range.Text = "Стандартное отклонение (СКО)"; $table2.Cell(4,2).Range.Text = "[x.xxx]"
-        $table2.Cell(5,1).Range.Text = "Относительное СКО (RSD), %"; $table2.Cell(5,2).Range.Text = "[x.xxx]"
+        $table2.Cell(5,1).Range.Text = "Относительное СКО, %"; $table2.Cell(5,2).Range.Text = "[x.xxx]"
         $table2.Cell(6,1).Range.Text = "Минимум"; $table2.Cell(6,2).Range.Text = "[x.xxx]"
         $table2.Cell(7,1).Range.Text = "Максимум"; $table2.Cell(7,2).Range.Text = "[x.xxx]"
     } else {
         $table2.Cell(2,1).Range.Text = "Количество измерений"; $table2.Cell(2,2).Range.Text = $count.ToString()
         $table2.Cell(3,1).Range.Text = "Среднее арифметическое (площадь)"; $table2.Cell(3,2).Range.Text = [math]::Round($mean,4).ToString()
         $table2.Cell(4,1).Range.Text = "Стандартное отклонение (СКО)"; $table2.Cell(4,2).Range.Text = [math]::Round($stddev,4).ToString()
-        $table2.Cell(5,1).Range.Text = "Относительное СКО (RSD), %"; $table2.Cell(5,2).Range.Text = [math]::Round($rsd,4).ToString()
+        $table2.Cell(5,1).Range.Text = "Относительное СКО, %"; $table2.Cell(5,2).Range.Text = [math]::Round($rsd,4).ToString()
         $table2.Cell(6,1).Range.Text = "Минимум"; $table2.Cell(6,2).Range.Text = [math]::Round($min,4).ToString()
         $table2.Cell(7,1).Range.Text = "Максимум"; $table2.Cell(7,2).Range.Text = [math]::Round($max,4).ToString()
     }
@@ -259,13 +264,13 @@ try {
             $selection.Font.Bold = $true
             $selection.TypeText("соответствует")
             $selection.Font.Bold = $false
-            $selection.TypeText(" критерию (RSD ≤ 2%)")
+            $selection.TypeText(" критерию (ОСКО ≤ 2%)")
         } else {
             $selection.TypeText("Прецизионность ")
             $selection.Font.Bold = $true
             $selection.TypeText("НЕ соответствует")
             $selection.Font.Bold = $false
-            $selection.TypeText(" критерию (RSD > 2%)")
+            $selection.TypeText(" критерию (ОСКО > 2%)")
         }
     }
 
