@@ -53,7 +53,7 @@ if ($Mode -eq "final") {
     $min = ($areas | Measure-Object -Minimum).Minimum
     $max = ($areas | Measure-Object -Maximum).Maximum
     $rsd = if ($mean -ne 0) { ($stddev / $mean) * 100 } else { 0 }
-    Write-Host "   Статистика: Среднее=$([math]::Round($mean,4)), СКО=$([math]::Round($stddev,4)), RSD=$([math]::Round($rsd,4))%" -ForegroundColor Gray
+    Write-Host "   Статистика: Среднее=$([math]::Round($mean,4)), СКО=$([math]::Round($stddev,4)), ОСКО=$([math]::Round($rsd,4))%" -ForegroundColor Gray
 } else {
     Write-Host "РЕЖИМ: ЧЕРНОВИК (draft) — используются маски" -ForegroundColor Yellow
     $maskRows = 6
