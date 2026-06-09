@@ -1,4 +1,4 @@
-param(
+﻿param(
     [ValidateSet("draft","final")]
     [string]$Mode = "final",
 
@@ -135,7 +135,7 @@ try {
     $selection.Font.Bold = $true
     $selection.TypeText("Дата генерации: ")
     $selection.Font.Bold = $false
-    $selection.TypeText("$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')")
+    $selection.TypeText("$(Get-Date -Format 'yyyy-MM-dd HH:mm')")
     $selection.TypeParagraph()
 
     # Таблица исходных данных
