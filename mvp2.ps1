@@ -1,12 +1,18 @@
-# ===== ПАРАМЕТРИЗАЦИЯ: РЕЖИМ РАБОТЫ =====
-# "draft"  – черновик (маски, график-заглушка)
-# "final"  – финальный отчёт (реальные данные из data.xlsx)
-$Mode = "final"
+param(
+    [ValidateSet("draft","final")]
+    [string]$Mode = "final",
 
-$DataPath = "data.xlsx"
-$sheetName = "pass"
-$ReportPath = "Report.docx"
-# =======================================
+    [string]$DataPath = "data.xlsx",
+
+    [string]$sheetName = "pass",
+
+    [string]$ReportPath = ""
+)
+
+if (-not $ReportPath) {
+    $suffix = if ($Mode -eq "draft") { "draft" } else { $sheetName }
+    $ReportPath = "Report_$suffix.docx"
+}
 
 # Очистка предыдущих процессов Excel/Word
 Get-Process excel, winword -ErrorAction SilentlyContinue | Stop-Process -Force
@@ -20,7 +26,7 @@ $ExcelPath = Join-Path $ScriptDir $DataPath
 $OutputDocx = Join-Path $ScriptDir $ReportPath
 $PercentWidth = 80   # ширина графика в % от ширины страницы
 
-# --- чтение данных, расчёт статистики (только для final) ---
+# --- Чтение данных, расчёт статистики (только для final) ---
 if ($Mode -eq "final") {
     Write-Host "РЕЖИМ: ОТЧЁТ (final)" -ForegroundColor Green
     Write-Host "2. Проверка файла Excel..." -ForegroundColor Cyan
